@@ -22,7 +22,7 @@ impl Ord for Node {
     }
 }
 
-/// Build the Huffman Tree
+/// Build the Huffman tree
 ///
 /// Construct a Huffman tree from the message using the following algorithm:
 ///     0. Calculate frequency of each letter in the message and store the
@@ -83,13 +83,13 @@ pub fn build_tree(message: &String) -> (Node, HashMap<char, u64>) {
 /// A HashMap that is used for storing conversion results
 pub type M = HashMap<String, String>;
 
-/// Traverse the Huffman Tree and store Huffman Codes in hashmaps.
+/// Traverse the Huffman tree and store Huffman Codes in the hashmaps.
 ///
 /// Generate code for each letter in the message using the following algorithm:
 ///     0. If the root is empty, `return None`
 ///     1. If the current node is a leaf node and represents a valid character:
-///         1.0 Add the `value: path` mapping to `hm1`
-///         1.1 Add the `path: value` mapping to `hm2`
+///         1.0 Add the `value: path` mapping to `char_to_code`
+///         1.1 Add the `path: value` mapping to `code_to_char`
 ///     2. Recursively mark nodes in the left subtree and add 0 to `path`)
 ///     3. Recursively mark nodes in the right subtree and add 1 to `path`)
 ///     4. Return `Some(())`
