@@ -29,14 +29,6 @@ cargo build --release
 ./huffman encoding.txt decoding.txt --decompress
 ```
 
-The output should look like this:
-
-```
-Message: Exploration!
-Compression: 110001000110100000100010100001101100001000001100000
-Decompression: Exploration!
-```
-
 ## Tests
 
 Tests can be run as follows:
