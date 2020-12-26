@@ -98,7 +98,7 @@ fn main() {
                     .parse::<String>()
                     .expect("Could not parse the argument!");
 
-                // Read the input file (raw bytes)
+                // Read the input file (raw bits)
                 let content: String =
                     fs::read_to_string(input).expect("Could not open a file!");
 
