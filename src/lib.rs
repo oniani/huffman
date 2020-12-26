@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap};
 
-#[derive(Debug, Eq, PartialEq, PartialOrd)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Node {
     value: Option<char>,
     weight: u64,
@@ -20,18 +20,30 @@ impl Default for Node {
     }
 }
 
+/// Custom `PartialOrd` for making a `BinaryHeap` a MinHeap
+impl PartialOrd for Node {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        other.weight.partial_cmp(&self.weight)
+    }
+}
+
+/// Custom `Ord` for making a `BinaryHeap` a MinHeap
 impl Ord for Node {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.weight.cmp(&other.weight).reverse()
+        self.partial_cmp(other).unwrap()
     }
 }
 
 impl Node {
+    /// If a node does not have any children, it is a leaf node. In this case,
+    /// if a node does not have neither a left, nor a right child, we consider
+    /// it a leaf.
     fn is_leaf(&self) -> bool {
         self.left.is_none() && self.right.is_none()
     }
 }
 
+// A frequency table for storing character frequencies
 pub type FrequencyTable = HashMap<char, u64>;
 
 /// Build the Huffman tree
