@@ -5,7 +5,7 @@ compression.
 
 ## Dependencies
 
-Only Rust.
+- [serde_json](https://docs.rs/serde_json/1.0.59/serde_json/index.html)
 
 ## Run
 
