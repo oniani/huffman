@@ -1,6 +1,5 @@
 use std::cmp::Ordering;
-use std::collections::BinaryHeap;
-use std::collections::HashMap;
+use std::collections::{BinaryHeap, HashMap};
 
 #[derive(Debug, Eq, PartialEq, PartialOrd)]
 pub struct Node {
@@ -53,13 +52,15 @@ pub type FrequencyTable = HashMap<char, u64>;
 ///     5. Return the (root, frequency table) tuple
 pub fn build_tree(message: &String) -> Option<(Node, FrequencyTable)> {
     // Build the frequency table
-    let mut frequency_table: FrequencyTable = HashMap::with_capacity(message.len());
+    let mut frequency_table: FrequencyTable =
+        HashMap::with_capacity(message.len());
     for char in message.chars().into_iter() {
         *frequency_table.entry(char).or_insert(0) += 1
     }
 
     // Build the heap
-    let mut heap: BinaryHeap<Node> = BinaryHeap::with_capacity(frequency_table.len());
+    let mut heap: BinaryHeap<Node> =
+        BinaryHeap::with_capacity(frequency_table.len());
     for (char, frequency) in frequency_table.iter() {
         heap.push(Node {
             value: Some(*char),
@@ -88,7 +89,7 @@ pub fn build_tree(message: &String) -> Option<(Node, FrequencyTable)> {
     }
 
     // The only node left in the heap is the root node
-    let root: Node = heap.pop().unwrap();
+    let root: Node = heap.pop()?;
 
     Some((root, frequency_table))
 }
@@ -113,19 +114,13 @@ pub fn annotate(
     node: Option<Box<Node>>,
     code: String,
 ) -> Option<()> {
-    if node.is_none() {
-        return None;
-    }
-
-    let node = node.unwrap();
+    let node: Box<Node> = node?;
 
     if node.is_leaf() {
-        let val: String = node.value.unwrap().to_string();
+        let val: String = node.value?.to_string();
 
-        char_to_code
-            .entry(val.to_owned())
-            .or_insert(code.to_owned());
-        code_to_char.entry(code.to_owned()).or_insert(val);
+        char_to_code.entry(val.clone()).or_insert(code.clone());
+        code_to_char.entry(code.clone()).or_insert(val);
     }
 
     annotate(char_to_code, code_to_char, node.left, format!("{}0", code));
@@ -139,8 +134,7 @@ pub fn compress(message: &String, char_to_code: &Mapping) -> String {
     let mut encoding: Vec<String> = Vec::with_capacity(message.len());
 
     for char in message.chars().into_iter() {
-        let item: &String = &char_to_code[&char.to_string()];
-        encoding.push(item.to_owned());
+        encoding.push(char_to_code[&char.to_string()].clone());
     }
 
     encoding.into_iter().collect::<String>()
@@ -154,8 +148,7 @@ pub fn decompress(message: &String, code_to_char: &Mapping) -> String {
     while index <= message.len() - 1 {
         for (code, _) in code_to_char.iter() {
             if message[index..].starts_with(code) {
-                let item: &String = &code_to_char[&code.to_string()];
-                decoding.push(item.to_owned());
+                decoding.push(code_to_char[&code.to_owned()].clone());
                 index += code.len();
             }
         }

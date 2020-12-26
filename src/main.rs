@@ -1,20 +1,16 @@
 mod lib;
 
-use lib::annotate;
-use lib::build_tree;
-use lib::compress;
-use lib::decompress;
+use lib::{annotate, build_tree, compress, decompress};
 use lib::{FrequencyTable, Mapping, Node};
 
 use std::env;
 use std::fs;
 
-use serde_json::Value;
-
 /// Generate the Huffman codes for a given string
 fn generate_encoding(message: String) -> (String, Mapping, Mapping) {
     // Get the root and weights
-    let (root, _) = build_tree(&message).unwrap_or((Node::default(), FrequencyTable::default()));
+    let (root, _) = build_tree(&message)
+        .unwrap_or((Node::default(), FrequencyTable::default()));
 
     // Initialize variables
     let mut char_to_code: Mapping = Mapping::new();
@@ -31,76 +27,94 @@ fn generate_encoding(message: String) -> (String, Mapping, Mapping) {
     (encoding, char_to_code, code_to_char)
 }
 
+/// Generate decoding
+fn generate_decoding(message: String) -> String {
+    // Read the metadata
+    let metadata: String =
+        fs::read_to_string("metadata.json").expect("Could not open a file!");
+
+    // Read the metadata
+    let code_to_char: Mapping =
+        serde_json::from_str(&metadata).expect("Could not deserialize!");
+
+    // Decompress the file
+    let decoding: String = decompress(&message, &code_to_char);
+
+    decoding
+}
+
 /// Run everything here
 fn main() {
     // Command line arguments
     let args: Vec<_> = env::args().collect();
 
-    // Need at least two arguments
-    if args.len() < 2 {
-        panic!("Provide input and output files.");
-    }
+    // Make decisions based on the number of arguments
+    match args.len() {
+        1 => panic!("Provide input and output files!"),
 
-    // If there are 3 arguments, it is the compression
-    if args.len() == 3 {
-        // Read the input data from a file
-        let input: String = args[1]
-            .parse::<String>()
-            .expect("Could not parse the arugment.");
+        2 => panic!("Provide input and output files!"),
 
-        // Read the input file
-        let content: String = fs::read_to_string(input).expect("Could not open a file.");
-
-        // Compress a file
-        let (encoding, _, code_to_char): (String, Mapping, Mapping) = generate_encoding(content);
-
-        // Create an output file out of the second argument
-        let output: String = args[2]
-            .parse::<String>()
-            .expect("Could not parse the argument.");
-        fs::write(output, &encoding).expect("Could not write file.");
-
-        // Write the metadata
-        let json: String = serde_json::to_string(&code_to_char).expect("Could not serialize.");
-        fs::write("metadata.json", &json).expect("Could not write file.");
-    }
-
-    // If there are 4 arguments, it must be the decompression mode
-    if args.len() == 4 {
-        // Check the flag
-        let flag: String = args[3]
-            .parse::<String>()
-            .expect("Could not parse the argument.");
-
-        // Make sure that the decompression argument is specified
-        if flag == "--decompress" {
+        3 => {
             // Read the input data from a file
             let input: String = args[1]
                 .parse::<String>()
-                .expect("Could not parse the arugment.");
+                .expect("Could not parse the argument!");
 
             // Read the input file
-            let content: String = fs::read_to_string(input).expect("Could not open a file.");
+            let content: String =
+                fs::read_to_string(input).expect("Could not open a file!");
 
-            // Read the metadata
-            let metadata: String = fs::read_to_string("metadata.json").expect("Could not open a file.");
+            // Compress a file
+            let (encoding, _, code_to_char): (String, Mapping, Mapping) =
+                generate_encoding(content);
 
-            // Raw data
-            // let data = format!(r#"{}"#, content.as_str());
-
-            // Read the metadata
-            let code_to_char: Mapping = serde_json::from_str(&metadata).expect("Could not deserialize.");
-
-            // Decompress the file
-            let decoding: String = decompress(&content, &code_to_char);
-
-            // Write the decoded file content
+            // Create an output file out of the second argument
             let output: String = args[2]
                 .parse::<String>()
-                .expect("Could not parse the argument.");
+                .expect("Could not parse the argument!");
 
-            // Write the decoded file
-            fs::write(output, &decoding).expect("Unable to write file.");
+            // Write the compressed content of the input file
+            fs::write(output, &encoding).expect("Could not write to a file!");
+
+            // Serialize the data
+            let json: String = serde_json::to_string(&code_to_char)
+                .expect("Could not serialize!");
+
+            // Write the metadata
+            fs::write("metadata.json", json)
+                .expect("Could not write to a file.");
         }
+
+        4 => {
+            // Check the flag
+            let flag: String = args[3]
+                .parse::<String>()
+                .expect("Could not parse the argument!");
+
+            // Make sure that the decompression argument is specified
+            if flag == "--decompress" {
+                // Read the input data from a file
+                let input: String = args[1]
+                    .parse::<String>()
+                    .expect("Could not parse the argument!");
+
+                // Read the input file (raw bytes)
+                let content: String =
+                    fs::read_to_string(input).expect("Could not open a file!");
+
+                // Decompress a file
+                let decoding: String = generate_decoding(content);
+
+                // Write the decoded file content
+                let output: String = args[2]
+                    .parse::<String>()
+                    .expect("Could not parse the argument!");
+
+                // Write the decoded file
+                fs::write(output, decoding).expect("Unable to write file!");
+            }
+        }
+
+        _ => panic!("Redundant argument."),
     }
 }

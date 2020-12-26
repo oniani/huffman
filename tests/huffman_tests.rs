@@ -1,7 +1,4 @@
-use huffman::annotate;
-use huffman::build_tree;
-use huffman::compress;
-use huffman::decompress;
+use huffman::{annotate, build_tree, compress, decompress};
 use huffman::{FrequencyTable, Mapping, Node};
 
 #[test]
@@ -38,7 +35,8 @@ fn test_huffman_alnum() {
     // Iterate over all messages
     for message in messages {
         // Get the root and weights
-        let (root, _) = build_tree(&message).unwrap_or((Node::default(), FrequencyTable::new()));
+        let (root, _) = build_tree(&message)
+            .unwrap_or((Node::default(), FrequencyTable::new()));
 
         // Initialize variables
         let mut char_to_code: Mapping = Mapping::new();
@@ -80,7 +78,8 @@ fn test_huffman_utf8() {
     // Iterate over all messages
     for message in messages {
         // Get the root and weights
-        let (root, _) = build_tree(&message).unwrap_or((Node::default(), FrequencyTable::new()));
+        let (root, _) = build_tree(&message)
+            .unwrap_or((Node::default(), FrequencyTable::new()));
 
         // Initialize variables
         let mut char_to_code: Mapping = Mapping::new();
