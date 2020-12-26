@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 
-#[derive(Debug, Eq, PartialOrd, PartialEq)]
+#[derive(Debug, Eq, PartialEq, PartialOrd)]
 pub struct Node {
     value: Option<char>,
     weight: u64,
@@ -10,9 +10,14 @@ pub struct Node {
     right: Option<Box<Node>>,
 }
 
-impl Node {
-    fn is_leaf(&self) -> bool {
-        self.left.is_none() && self.right.is_none()
+impl Default for Node {
+    fn default() -> Self {
+        Node {
+            value: None,
+            weight: 0,
+            left: None,
+            right: None,
+        }
     }
 }
 
@@ -22,34 +27,42 @@ impl Ord for Node {
     }
 }
 
+impl Node {
+    fn is_leaf(&self) -> bool {
+        self.left.is_none() && self.right.is_none()
+    }
+}
+
+pub type FrequencyTable = HashMap<char, u64>;
+
 /// Build the Huffman tree
 ///
 /// Construct a Huffman tree from the message using the following algorithm:
-///     0. Calculate frequency of each letter in the message and store the
+///     1. Calculate frequency of each character in the message and store the
 ///        result in a frequency table
-///     1. Turn each letter into an object of type Node and add to a heap
-///     2. While the heap contains 2 or more items:
-///         2.0 Remove two items (`left` and `right`) from the heap
-///         2.1 Make a new node with the weight equal to the sum of weight of
-///             the two items from 2.0
-///         2.2 Assign left and right as left and right children of the new
+///     2. Turn each character into an object of type Node and add to a heap
+///     3. While the heap contains 2 or more items:
+///         3.1 Remove two items (`left` and `right`) from the heap
+///         3.2 Make a new node with the weight equal to the sum of weight of
+///             the two items from 3.0
+///         3.2 Assign left and right as left and right children of the new
 ///             node respectively
-///         2.3 Add the new node to the heap
-///     3. Remove the only remaining node from the heap. This is the root of
+///         3.3 Add the new node to the heap
+///     4. Remove the only remaining node from the heap. This is the root of
 ///        the Huffman tree
-///     4. Return the (root, frequency table) tuple
-pub fn build_tree(message: &String) -> (Node, HashMap<char, u64>) {
+///     5. Return the (root, frequency table) tuple
+pub fn build_tree(message: &String) -> Option<(Node, FrequencyTable)> {
     // Build the frequency table
-    let mut frequency_table: HashMap<char, u64> = HashMap::with_capacity(message.len());
-    for letter in message.chars().into_iter() {
-        *frequency_table.entry(letter).or_insert(0) += 1
+    let mut frequency_table: FrequencyTable = HashMap::with_capacity(message.len());
+    for char in message.chars().into_iter() {
+        *frequency_table.entry(char).or_insert(0) += 1
     }
 
     // Build the heap
-    let mut heap: BinaryHeap<Node> = BinaryHeap::new();
-    for (letter, frequency) in frequency_table.iter() {
+    let mut heap: BinaryHeap<Node> = BinaryHeap::with_capacity(frequency_table.len());
+    for (char, frequency) in frequency_table.iter() {
         heap.push(Node {
-            value: Some(*letter),
+            value: Some(*char),
             weight: *frequency,
             left: None,
             right: None,
@@ -59,8 +72,8 @@ pub fn build_tree(message: &String) -> (Node, HashMap<char, u64>) {
     // While there are at least 2 items in the heap
     while heap.len() >= 2 {
         // Pop the left and right nodes
-        let left: Node = heap.pop().unwrap();
-        let right: Node = heap.pop().unwrap();
+        let left: Node = heap.pop()?;
+        let right: Node = heap.pop()?;
 
         // Create a new node
         let node: Node = Node {
@@ -77,25 +90,26 @@ pub fn build_tree(message: &String) -> (Node, HashMap<char, u64>) {
     // The only node left in the heap is the root node
     let root: Node = heap.pop().unwrap();
 
-    (root, frequency_table)
+    Some((root, frequency_table))
 }
 
 /// A HashMap that is used for storing conversion results
-pub type M = HashMap<String, String>;
+pub type Mapping = HashMap<String, String>;
 
-/// Traverse the Huffman tree and store Huffman Codes in the hashmaps.
+/// Traverse the Huffman tree and create mappings out of Huffman Codes.
 ///
-/// Generate code for each letter in the message using the following algorithm:
-///     0. If the root is empty, `return None`
-///     1. If the current node is a leaf node and represents a valid character:
-///         1.0 Add the `value: path` mapping to `char_to_code`
-///         1.1 Add the `path: value` mapping to `code_to_char`
-///     2. Recursively mark nodes in the left subtree and add 0 to `path`)
-///     3. Recursively mark nodes in the right subtree and add 1 to `path`)
-///     4. Return `Some(())`
+/// Generate code for each character in the message using the following
+/// algorithm:
+///     1. If the root is empty, `return None`
+///     2. If the current node is a leaf node and represents a valid character:
+///         2.0 Add the `value: path` mapping to `char_to_code`
+///         2.1 Add the `path: value` mapping to `code_to_char`
+///     3. Recursively mark nodes in the left subtree and add 0 to `code`)
+///     4. Recursively mark nodes in the right subtree and add 1 to `code`)
+///     5. Return `Some(())`
 pub fn annotate(
-    char_to_code: &mut M,
-    code_to_char: &mut M,
+    char_to_code: &mut Mapping,
+    code_to_char: &mut Mapping,
     node: Option<Box<Node>>,
     code: String,
 ) -> Option<()> {
@@ -121,31 +135,31 @@ pub fn annotate(
 }
 
 /// Compress a message
-pub fn compress(message: &String, char_to_code: &M) -> String {
-    let mut compression: Vec<String> = Vec::with_capacity(message.len());
+pub fn compress(message: &String, char_to_code: &Mapping) -> String {
+    let mut encoding: Vec<String> = Vec::with_capacity(message.len());
 
-    for letter in message.chars().into_iter() {
-        let item: &String = &char_to_code[&letter.to_string()];
-        compression.push(item.to_owned());
+    for char in message.chars().into_iter() {
+        let item: &String = &char_to_code[&char.to_string()];
+        encoding.push(item.to_owned());
     }
 
-    compression.into_iter().collect::<String>()
+    encoding.into_iter().collect::<String>()
 }
 
 /// Decompress a message
-pub fn decompress(message: &String, code_to_char: &M) -> String {
-    let mut decompression: Vec<String> = Vec::with_capacity(message.len());
-    let mut index: usize = 0;
+pub fn decompress(message: &String, code_to_char: &Mapping) -> String {
+    let mut decoding: Vec<String> = Vec::with_capacity(message.len());
 
+    let mut index: usize = 0;
     while index <= message.len() - 1 {
         for (code, _) in code_to_char.iter() {
             if message[index..].starts_with(code) {
                 let item: &String = &code_to_char[&code.to_string()];
-                decompression.push(item.to_owned());
+                decoding.push(item.to_owned());
                 index += code.len();
             }
         }
     }
 
-    decompression.into_iter().collect::<String>()
+    decoding.into_iter().collect::<String>()
 }

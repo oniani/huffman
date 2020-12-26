@@ -1,8 +1,8 @@
 use huffman::annotate;
 use huffman::build_tree;
-use huffman::decompress;
 use huffman::compress;
-use huffman::{Node, M};
+use huffman::decompress;
+use huffman::{FrequencyTable, Mapping, Node};
 
 #[test]
 fn test_huffman_alnum() {
@@ -38,11 +38,11 @@ fn test_huffman_alnum() {
     // Iterate over all messages
     for message in messages {
         // Get the root and weights
-        let (root, _) = build_tree(&message);
+        let (root, _) = build_tree(&message).unwrap_or((Node::default(), FrequencyTable::new()));
 
         // Initialize variables
-        let mut char_to_code: M = M::new();
-        let mut code_to_char: M = M::new();
+        let mut char_to_code: Mapping = Mapping::new();
+        let mut code_to_char: Mapping = Mapping::new();
         let node: Option<Box<Node>> = Some(Box::new(root));
         let code: String = "".to_string();
 
@@ -80,11 +80,11 @@ fn test_huffman_utf8() {
     // Iterate over all messages
     for message in messages {
         // Get the root and weights
-        let (root, _) = build_tree(&message);
+        let (root, _) = build_tree(&message).unwrap_or((Node::default(), FrequencyTable::new()));
 
         // Initialize variables
-        let mut char_to_code: M = M::new();
-        let mut code_to_char: M = M::new();
+        let mut char_to_code: Mapping = Mapping::new();
+        let mut code_to_char: Mapping = Mapping::new();
         let node: Option<Box<Node>> = Some(Box::new(root));
         let code: String = "".to_string();
 
