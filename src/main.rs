@@ -111,7 +111,8 @@ fn main() {
                     .expect("Could not parse the argument!");
 
                 // Write the decoded file
-                fs::write(output, decoding).expect("Unable to write file!");
+                fs::write(output, decoding)
+                    .expect("Could not write to a file!");
             }
         }
 
