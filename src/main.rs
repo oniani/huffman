@@ -82,7 +82,7 @@ fn main() {
 
             // Write the metadata
             fs::write("metadata.json", json)
-                .expect("Could not write to a file.");
+                .expect("Could not write to a file!");
         }
 
         4 => {
@@ -115,6 +115,6 @@ fn main() {
             }
         }
 
-        _ => panic!("Redundant argument."),
+        _ => panic!("Redundant argument!"),
     }
 }
