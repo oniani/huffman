@@ -24,7 +24,7 @@ cargo build --release
 # `encoding.txt` is the encoding that was generated in the previous step.
 # `decoding.txt` should be a dcompression of `encoding.txt`.
 # Notice that `decompress(compress(file)) = file` and hence, `decoding.txt`
-# must have the same contents as  `to_encode.txt`.
+# must have the same contents as `to_encode.txt`.
 # `--decompress` argument tells the program that the decompression mode is on.
 ./huffman encoding.txt decoding.txt --decompress
 ```
