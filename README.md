@@ -32,8 +32,6 @@ cargo build --release
 
 ## Tests
 
-Tests can be run as follows:
-
 ```
 cargo test --release
 ```
