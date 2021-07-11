@@ -9,8 +9,7 @@ use std::fs;
 /// Generate the Huffman codes for a given string
 fn generate_encoding(message: String) -> (String, Mapping, Mapping) {
     // Get the root and weights
-    let (root, _) = build_tree(&message)
-        .unwrap_or((Node::default(), FrequencyTable::default()));
+    let (root, _) = build_tree(&message).unwrap_or((Node::default(), FrequencyTable::default()));
 
     // Initialize variables
     let mut char_to_code: Mapping = Mapping::new();
@@ -30,12 +29,10 @@ fn generate_encoding(message: String) -> (String, Mapping, Mapping) {
 /// Generate decoding
 fn generate_decoding(message: String) -> String {
     // Read the metadata
-    let metadata: String =
-        fs::read_to_string("metadata.json").expect("Could not open a file!");
+    let metadata: String = fs::read_to_string("metadata.json").expect("Could not open a file!");
 
     // Read the metadata
-    let code_to_char: Mapping =
-        serde_json::from_str(&metadata).expect("Could not deserialize!");
+    let code_to_char: Mapping = serde_json::from_str(&metadata).expect("Could not deserialize!");
 
     // Decompress the file
     let decoding: String = decompress(&message, &code_to_char);
@@ -51,9 +48,7 @@ fn main() {
     // Make decisions based on the number of arguments
     match args.len() {
         1 => panic!("Provide input and output files!"),
-
         2 => panic!("Provide input and output files!"),
-
         3 => {
             // Read the input data from a file
             let input: String = args[1]
@@ -61,8 +56,7 @@ fn main() {
                 .expect("Could not parse the argument!");
 
             // Read the input file
-            let content: String =
-                fs::read_to_string(input).expect("Could not open a file!");
+            let content: String = fs::read_to_string(input).expect("Could not open a file!");
 
             // Compress a file
             let (encoding, _, code_to_char): (String, Mapping, Mapping) =
@@ -77,14 +71,11 @@ fn main() {
             fs::write(output, &encoding).expect("Could not write to a file!");
 
             // Serialize the data
-            let json: String = serde_json::to_string(&code_to_char)
-                .expect("Could not serialize!");
+            let json: String = serde_json::to_string(&code_to_char).expect("Could not serialize!");
 
             // Write the metadata
-            fs::write("metadata.json", json)
-                .expect("Could not write to a file!");
+            fs::write("metadata.json", json).expect("Could not write to a file!");
         }
-
         4 => {
             // Check the flag
             let flag: String = args[3]
@@ -99,8 +90,7 @@ fn main() {
                     .expect("Could not parse the argument!");
 
                 // Read the input file (raw bits)
-                let content: String =
-                    fs::read_to_string(input).expect("Could not open a file!");
+                let content: String = fs::read_to_string(input).expect("Could not open a file!");
 
                 // Decompress a file
                 let decoding: String = generate_decoding(content);
@@ -111,11 +101,9 @@ fn main() {
                     .expect("Could not parse the argument!");
 
                 // Write the decoded file
-                fs::write(output, decoding)
-                    .expect("Could not write to a file!");
+                fs::write(output, decoding).expect("Could not write to a file!");
             }
         }
-
         _ => panic!("Redundant argument!"),
     }
 }

@@ -64,16 +64,14 @@ pub type FrequencyTable = HashMap<char, u64>;
 ///     5. Return the (root, frequency table) tuple
 pub fn build_tree(message: &String) -> Option<(Node, FrequencyTable)> {
     // Build the frequency table
-    let mut frequency_table: FrequencyTable =
-        HashMap::with_capacity(message.len());
+    let mut frequency_table: FrequencyTable = HashMap::with_capacity(message.len());
 
     for char in message.chars().into_iter() {
         *frequency_table.entry(char).or_insert(0) += 1
     }
 
     // Build the heap
-    let mut heap: BinaryHeap<Node> =
-        BinaryHeap::with_capacity(frequency_table.len());
+    let mut heap: BinaryHeap<Node> = BinaryHeap::with_capacity(frequency_table.len());
 
     for (char, frequency) in frequency_table.iter() {
         heap.push(Node {
